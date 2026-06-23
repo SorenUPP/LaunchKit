@@ -7,7 +7,6 @@ A production-ready fullstack authentication boilerplate built with Node.js, Expr
 Base URL: `https://launchkit-hvt0.onrender.com`  
 Swagger Docs: `https://launchkit-hvt0.onrender.com/api/docs`
 
-> Note: The free tier on Render spins down after inactivity. First request may take 30–60 seconds.
 
 ## Tech Stack
 
