@@ -1,9 +1,8 @@
-const { cert, initializeApp, getApp } = require("firebase-admin/app");
+const { cert, initializeApp } = require("firebase-admin/app");
 const { getAuth } = require("firebase-admin/auth");
 const { getFirestore } = require("firebase-admin/firestore");
-const path = require("path");
 
-const serviceAccount = require(path.join(__dirname, "../../serviceAccountKey.json"));
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
 initializeApp({
     credential: cert(serviceAccount),
