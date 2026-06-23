@@ -99,20 +99,6 @@ cd LaunchKit
 npm install
 ```
 
-### Environment Variables
-
-Create a `.env` file in the `server/` folder:
-PORT=5000
-
-JWT_SECRET=your_jwt_secret
-JWT_REFRESH_SECRET=your_refresh_secret
-FIREBASE_SERVICE_ACCOUNT={"type":"service_account",...}
-
-Generate secure secrets:
-```bash
-node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-```
-
 ### Run Locally
 
 ```bash
