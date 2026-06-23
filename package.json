@@ -8,6 +8,8 @@
     "firebase": "^12.15.0",
     "firebase-admin": "^14.0.0",
     "jsonwebtoken": "^9.0.3",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
     "zod": "^4.4.3"
   },
   "name": "launchkit",
@@ -15,9 +17,9 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "start": "node server/index.js",
+    "dev": "nodemon server/index.js",
+    "test": "jest --detectOpenHandles --forceExit"
   },
   "repository": {
     "type": "git",
@@ -32,6 +34,21 @@
   },
   "homepage": "https://github.com/SorenUPP/LaunchKit#readme",
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "babel-jest": "^30.4.1",
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14",
+    "supertest": "^7.2.2"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/tests/**/*.test.js"
+    ],
+    "transform": {},
+    "transformIgnorePatterns": [
+      "node_modules/(?!(firebase-admin|@firebase|jose|jwks-rsa)/)"
+    ]
   }
 }
