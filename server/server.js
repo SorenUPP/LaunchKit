@@ -12,21 +12,24 @@ const csrfOriginCheck = require("./src/middleware/csrf");
 const app = express();
 
 app.use(cors({
-    origin: "http://localhost:3000",
+    origin: process.env.ALLOWED_ORIGINS?.split(",") || "http://localhost:3000",
     credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
+app.use(csrfOriginCheck);
 
 app.get("/", (req, res) => {
     res.json({ message: "API running" });
 });
 
-app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+if (process.env.NODE_ENV !== "production") {
+    app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+}
+
+app.use("/api/auth", authLimiter);
+app.use("/api/auth/login", loginLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api", protectedRoutes);
-app.use("/api/auth", authLimiter);
-app.use("api/auth/login", loginLimiter);
-app.use(csrfOriginCheck);
 
 module.exports = app;

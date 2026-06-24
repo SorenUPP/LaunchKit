@@ -6,9 +6,9 @@ const { Timestamp } = require("firebase-admin/firestore");
 const validate = require("./validate");
 const { registerSchema, loginSchema } = require("../validation/authSchemas");
 const router = express.Router();
+const logger = require("../config/logger");
 
 // Registeration
-
 router.post("/register", validate(registerSchema), async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -18,7 +18,10 @@ router.post("/register", validate(registerSchema), async (req, res) => {
             return res.status(400).json({ message: "User already exists" });
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const SALT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS) || 12;
+        
+        const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
         const user = await UserModel.create({
             email,
             password: hashedPassword,
@@ -28,7 +31,7 @@ router.post("/register", validate(registerSchema), async (req, res) => {
 
         res.status(201).json({ message: "User registered successfully" });
     } catch (error) {
-        console.error(error);
+       logger.error("Error during registration:", { error: error.message, email});
         res.status(500).json({ message: "Server error" });
     }
 });
@@ -39,12 +42,12 @@ router.post("/login", validate(loginSchema), async (req, res) => {
         const {email, password} = req.body;
         
         const user = await UserModel.findByEmail(email);
+        const DUMMY_HASH = "$2b$10$CwTycUXWue0Thq9StjUM0uJ8r6h1Z5e1F5Q5e1F5Q5e1F5Q5e1F5Q5e";
         
         const isMatch = user
         ? await bcrypt.compare(password, user.password)
         : await bcrypt.compare(password, DUMMY_HASH);
         
-        const DUMMY_HASH = "$2b$10$CwTycUXWue0Thq9StjUM0uJ8r6h1Z5e1F5Q5e1F5Q5e1F5Q5e1F5Q5e";
 
         if (!user || !isMatch) {
             return res.status(401).json({ message: "Invalid email or password" });
@@ -64,7 +67,7 @@ router.post("/login", validate(loginSchema), async (req, res) => {
 
        
 
-        await UserModel.savedRefreshToken(user.id, refreshToken);
+        await UserModel.saveRefreshToken(user.id, refreshToken);
         
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
@@ -76,7 +79,7 @@ router.post("/login", validate(loginSchema), async (req, res) => {
 
         res.json({ accessToken });
     } catch (error) {
-        console.error(error);
+        logger.error("Login error", { error: error.message, email });
         res.status(500).json({ message: "Server error"});
     }
 });
@@ -114,8 +117,12 @@ router.post("/logout", async (req, res) => {
     const token = req.cookies.refreshToken;
 
     if (token) {
+        try {
         const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
         await UserModel.deleteRefreshToken(decoded.id);
+    } catch (_) {
+        //already invalid, still clear the cookie
+    }
     }
 
     res.clearCookie("refreshToken", {

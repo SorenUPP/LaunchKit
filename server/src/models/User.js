@@ -22,7 +22,7 @@ const UserModel = {
         return { id: docRef.id, ...userData };
     },
 
-    savedRefreshToken: async (userId, token) => {
+    saveRefreshToken: async (userId, token) => {
         await tokenCollection.doc(userId).set({ token, createdAt: Date.now() });
     },
 
