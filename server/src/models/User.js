@@ -1,6 +1,7 @@
 const { db } = require("../firebaseAdmin");
 
 const userCollection = db.collection("users");
+const tokenCollection = db.collection("refreshTokens");
 
 const UserModel = {
     findByEmail: async (email) => {
@@ -10,9 +11,29 @@ const UserModel = {
         return { id: doc.id, ...doc.data() };
     },
 
+    findById: async (id) => {
+        const doc = await userCollection.doc(id).get();
+        if (!doc.exists) return null;
+        return { id: doc.id, ...doc.data() };
+    },
+
     create: async (userData) => {
         const docRef = await userCollection.add(userData);
         return { id: docRef.id, ...userData };
+    },
+
+    savedRefreshToken: async (userId, token) => {
+        await tokenCollection.doc(userId).set({ token, createdAt: Date.now() });
+    },
+
+    getRefreshToken: async (userId) => {
+        const doc = await tokenCollection.doc(userId).get();
+        if (!doc.exists) return null;
+        return doc.data().token;
+    },
+
+    deleteRefreshToken: async (userId) => {
+        await tokenCollection.doc(userId).delete();
     },
 };
 

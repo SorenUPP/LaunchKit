@@ -37,19 +37,21 @@ router.post("/register", validate(registerSchema), async (req, res) => {
 router.post("/login", validate(loginSchema), async (req, res) => {
     try {
         const {email, password} = req.body;
-
+        
         const user = await UserModel.findByEmail(email);
-        if (!user) {
-            return res.status(401).json({ message: "User does not exist" });
-        }
+        
+        const isMatch = user
+        ? await bcrypt.compare(password, user.password)
+        : await bcrypt.compare(password, DUMMY_HASH);
+        
+        const DUMMY_HASH = "$2b$10$CwTycUXWue0Thq9StjUM0uJ8r6h1Z5e1F5Q5e1F5Q5e1F5Q5e1F5Q5e";
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(401).json({ message: "Wrong Password" });
+        if (!user || !isMatch) {
+            return res.status(401).json({ message: "Invalid email or password" });
         }
 
         const accessToken = jwt.sign(
-            { id: user.id, email: user.email, role: user.role },
+            { id: user.id, email: user.email, role: user.role, tokenVersion: user.tokenVersion},
             process.env.JWT_SECRET,
             { expiresIn: "15m" }
         );
@@ -60,7 +62,10 @@ router.post("/login", validate(loginSchema), async (req, res) => {
             { expiresIn: "7d"}
         );
 
-        //Storing the refresh token in http cookie
+       
+
+        await UserModel.savedRefreshToken(user.id, refreshToken);
+        
         res.cookie("refreshToken", refreshToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
@@ -77,8 +82,8 @@ router.post("/login", validate(loginSchema), async (req, res) => {
 });
 
 //Refresh
-router.post("/refresh", (req, res) => {
-     const token = req.cookies.refreshToken || req.body.refreshToken;
+router.post("/refresh", async (req, res) => {
+     const token = req.cookies.refreshToken;
 
     if (!token) {
         return res.status(401).json({ message: "No refresh token" });
@@ -87,20 +92,32 @@ router.post("/refresh", (req, res) => {
     try {
         const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
 
+        const storedToken = await UserModel.getRefreshToken(decoded.id);
+        if (!storedToken || storedToken !== token) {
+            return res.status(403).json({ message: "Invalid refresh token" });  
+        }
+
         const accessToken = jwt.sign(
             { id: decoded.id },
             process.env.JWT_SECRET,
             { expiresIn: "15m" }
         );
 
-        res.json({ accessToken, refreshToken });
+        res.json({ accessToken });
     } catch(error) {
         return res.status(403).json({ message: "Invalid refresh token"});
     }
 });
 
 //Logout
-router.post("/logout", (req, res) => {
+router.post("/logout", async (req, res) => {
+    const token = req.cookies.refreshToken;
+
+    if (token) {
+        const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+        await UserModel.deleteRefreshToken(decoded.id);
+    }
+
     res.clearCookie("refreshToken", {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
