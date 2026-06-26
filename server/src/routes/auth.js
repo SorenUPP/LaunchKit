@@ -8,6 +8,10 @@ const { registerSchema, loginSchema } = require("../validation/authSchemas");
 const router = express.Router();
 const logger = require("../config/logger");
 
+const SALT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS) || 12;
+let DUMMY_HASH;
+bcrypt.hash("dummy-password-for-timing", SALT_ROUNDS).then(h => { DUMMY_HASH = h });
+
 // Registeration
 router.post("/register", validate(registerSchema), async (req, res) => {
     try {
@@ -17,9 +21,6 @@ router.post("/register", validate(registerSchema), async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
         }
-
-        const SALT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS) || 12;
-        
         const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
         const user = await UserModel.create({
@@ -42,7 +43,6 @@ router.post("/login", validate(loginSchema), async (req, res) => {
         const {email, password} = req.body;
         
         const user = await UserModel.findByEmail(email);
-        const DUMMY_HASH = "$2b$10$CwTycUXWue0Thq9StjUM0uJ8r6h1Z5e1F5Q5e1F5Q5e1F5Q5e1F5Q5e";
         
         const isMatch = user
         ? await bcrypt.compare(password, user.password)
@@ -100,8 +100,13 @@ router.post("/refresh", async (req, res) => {
             return res.status(403).json({ message: "Invalid refresh token" });  
         }
 
+        const user = await UserModel.findById(decoded.id);
+        if (!user) {
+            return res.status(403).json({ message: "User not found" });
+        }
+
         const accessToken = jwt.sign(
-            { id: decoded.id },
+            { id: decoded.id, email: user.email, role: user.role, tokenVersion: user.tokenVersion },
             process.env.JWT_SECRET,
             { expiresIn: "15m" }
         );
