@@ -46,33 +46,32 @@ Swagger Docs: available in development only
 - 11 passing unit tests with mocked database
 
 ## Project Structure
-
 LaunchKit/
 ├── server/
-│   ├── index.js                  # Entry point
-│   ├── server.js                 # Express app
+│   ├── index.js
+│   ├── server.js
 │   └── src/
 │       ├── config/
-│       │   ├── emailTemplates.js # HTML email templates
-│       │   ├── logger.js         # Winston logger
-│       │   ├── mailer.js         # Resend email client
-│       │   └── swagger.js        # Swagger config
+│       │   ├── emailTemplates.js
+│       │   ├── logger.js
+│       │   ├── mailer.js
+│       │   └── swagger.js
 │       ├── middleware/
-│       │   ├── auth.js           # JWT verification + token version check
-│       │   ├── csrf.js           # CSRF origin validation
-│       │   ├── rateLimiter.js    # Rate limiting
-│       │   └── requireRole.js    # Role-based access
+│       │   ├── auth.js
+│       │   ├── csrf.js
+│       │   ├── rateLimiter.js
+│       │   └── requireRole.js
 │       ├── models/
-│       │   └── User.js           # Firestore user + token model
+│       │   └── User.js
 │       ├── routes/
-│       │   ├── auth.js           # Auth endpoints
-│       │   ├── contact.js        # Contact form endpoint
-│       │   ├── protected.js      # Protected endpoints
-│       │   └── validate.js       # Zod middleware
+│       │   ├── auth.js
+│       │   ├── contact.js
+│       │   ├── protected.js
+│       │   └── validate.js
 │       ├── validation/
-│       │   └── authSchemas.js    # Zod schemas
+│       │   └── authSchemas.js
 │       └── tests/
-│           └── auth.test.js      # Jest tests
+│           └── auth.test.js
 ├── .gitignore
 └── package.json
 
@@ -128,15 +127,6 @@ npm run dev
 ```bash
 npm test
 ```
-
-## Authentication Flow
-Register/Login → Access Token (15min) + Refresh Token cookie (7d)
-Refresh token stored server-side in Firestore
-↓
-Access Token expires → POST /api/auth/refresh → validated against DB → New Access Token
-↓
-Logout → Refresh token deleted from Firestore + cookie cleared
-
 ## Contact Flow
 POST /api/contact → Zod validation → HTML sanitization → Rate limit check → Resend API → Email delivered to company inbox
 
