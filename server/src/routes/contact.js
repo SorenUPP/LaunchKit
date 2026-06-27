@@ -14,7 +14,6 @@ router.post("/", contactLimiter, validate(contactSchema), async (req, res) => {
         logger.info("Contact email sent", { from: email, subject });
         res.status(200).json({ message: "Message sent successfully" });
     } catch (error) {
-        console.error("Failed to send contact email", error);
         logger.error("Failed to send contact email", { error: error.message, from: email });
         res.status(500).json({ message: "Failed to send message" });
     }
