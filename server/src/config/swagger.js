@@ -113,6 +113,33 @@ const options = {
                     },
                 },
             },
+            "/api/contact": {
+                post: {
+                    summary: "Send a contact message to the company",
+                    tags: ["Contact"],
+                    requestBody: {
+                        required: true,
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        email: { type: "string", example: "custer@example.com" },
+                                        subject: { type: "string", example: "Inquiry about your sevices" },
+                                        message: { type: "string", example: "I would like to know more about your services." },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    responses: {
+                        200: { description: "Message sent successfully" },
+                        400: { description: "Validation error" },
+                        429: { description: "Too many requests" },
+                        500: { description: "Failed to send message" },
+                    }
+                }
+            },
         },
     },
     apis: [],

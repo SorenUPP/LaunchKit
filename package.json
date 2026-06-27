@@ -9,6 +9,7 @@
     "firebase": "^12.15.0",
     "firebase-admin": "^14.0.0",
     "jsonwebtoken": "^9.0.3",
+    "nodemailer": "^9.0.1",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
     "winston": "^3.19.0",

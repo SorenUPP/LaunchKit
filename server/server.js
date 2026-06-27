@@ -8,6 +8,7 @@ const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./src/config/swagger");
 const { authLimiter, loginLimiter } = require("./src/middleware/rateLimiter");
 const csrfOriginCheck = require("./src/middleware/csrf");
+const contactRouter = require("./src/routes/contact");
 
 const app = express();
 
