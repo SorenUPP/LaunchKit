@@ -46,6 +46,8 @@ Swagger Docs: available in development only
 - 11 passing unit tests with mocked database
 
 ## Project Structure
+```plaintext
+
 LaunchKit/
 ├── server/
 │   ├── index.js
@@ -74,6 +76,8 @@ LaunchKit/
 │           └── auth.test.js
 ├── .gitignore
 └── package.json
+
+```
 
 ## API Endpoints
 
