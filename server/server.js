@@ -32,5 +32,6 @@ app.use("/api/auth", authLimiter);
 app.use("/api/auth/login", loginLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api", protectedRoutes);
+app.use("/api/contact", contactRouter);
 
 module.exports = app;
