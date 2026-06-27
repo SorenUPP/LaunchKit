@@ -25,6 +25,15 @@ jest.mock("../firebaseAdmin", () => ({
 
 // Mock CSRF so it doesn't block test requests
 jest.mock("../middleware/csrf", () => (req, res, next) => next());
+jest.mock("resend", () => {
+    return {
+        Resend: jest.fn().mockImplementation(() => ({
+            emails: {
+                send: jest.fn().mockResolvedValue({ id: "mockemailid" }),
+            },
+        })),
+    };
+});
 
 const app = require("../../server");
 
@@ -141,5 +150,55 @@ describe("Role enforcement", () => {
             .get("/api/admin")
             .set("Authorization", `Bearer ${token}`);
         expect(res.statusCode).toBe(403);
+    });
+});
+
+// CONTACT
+describe("POST /api/contact", () => {
+    it("should send a contact mail message successfully", async () => {
+        const res = await request(app)
+        .post("/api/contact")
+        .send({ email: "test@test.com", subject: "Test Subject", message: "Test Message" });
+        expect(res.statusCode).toBe(200);
+        expect(res.body.message).toBe("Message sent successfully");
+    });
+
+    it("should fail with invalid email", async () => {
+        const res = await request(app)
+            .post("/api/contact")
+            .send({
+                email: "notanemail",
+                subject: "Test subject",
+                message: "This is a test message from a customer.",
+            });
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body.message).toBe("Validation error");
+    });
+
+    it("should fail with missing subject", async () => {
+        const res = await request(app)
+            .post("/api/contact")
+            .send({
+                email: "customer@test.com",
+                subject: "",
+                message: "This is a test message from a customer.",
+            });
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body.message).toBe("Validation error");
+    });
+
+    it("should fail with message too short", async () => {
+        const res = await request(app)
+            .post("/api/contact")
+            .send({
+                email: "customer@test.com",
+                subject: "Test subject",
+                message: "Too short",
+            });
+
+        expect(res.statusCode).toBe(400);
+        expect(res.body.message).toBe("Validation error");
     });
 });
