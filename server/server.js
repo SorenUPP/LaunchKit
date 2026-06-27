@@ -18,7 +18,6 @@ app.use(cors({
 }));
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
-app.use(csrfOriginCheck);
 
 app.get("/", (req, res) => {
     res.json({ message: "API running" });
@@ -27,11 +26,11 @@ app.get("/", (req, res) => {
 if (process.env.NODE_ENV !== "production") {
     app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
-
+app.use("/api/contact", contactRouter); 
+app.use(csrfOriginCheck);
 app.use("/api/auth", authLimiter);
 app.use("/api/auth/login", loginLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api", protectedRoutes);
-app.use("/api/contact", contactRouter);
 
 module.exports = app;
