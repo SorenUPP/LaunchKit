@@ -1,5 +1,5 @@
 const express = require("express");
-const validate = require("../middleware/validate");
+const validate = require("./validate");
 const { contactSchema } = require("../validation/authSchemas");
 const { contactLimiter } = require("../middleware/rateLimiter");
 const { sendContactEmail } = require("../config/mailer");
