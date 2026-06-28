@@ -5,7 +5,7 @@ A production-ready fullstack authentication boilerplate built with Node.js, Expr
 ## Live Demo
 
 Base URL: `https://launchkit-hvt0.onrender.com`  
-Swagger Docs: available in development only
+Swagger Docs: available in development only.
 
 ## Tech Stack
 
