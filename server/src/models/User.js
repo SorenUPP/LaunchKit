@@ -35,6 +35,13 @@ const UserModel = {
     deleteRefreshToken: async (userId) => {
         await tokenCollection.doc(userId).delete();
     },
+
+    incrementTokenVersion: async (userId) => {
+        const doc = await userCollection.doc(userId).get();
+        if (!doc.exists) throw new Error("User not found");
+        const current = doc.data().tokenVersion ?? 0;
+        await userCollection.doc(userId).update({ tokenVersion: current + 1 });
+    },
 };
 
 module.exports = UserModel;
