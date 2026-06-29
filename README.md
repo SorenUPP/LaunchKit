@@ -1,6 +1,6 @@
 # LaunchKit
 
-A production-ready fullstack authentication boilerplate built with Node.js, Express, Firebase, and JWT. Designed as a solid foundation for SaaS applications.
+A production-ready backend authentication boilerplate built with Node.js, Express, Firebase, and JWT. Designed as a solid foundation for SaaS applications and internal products.
 
 ## Live Demo
 
@@ -16,8 +16,10 @@ Swagger Docs: available in development only.
 - **Validation:** Zod
 - **Email:** Resend
 - **Logging:** Winston
-- **Documentation:** Swagger / OpenAPI 3.0
+- **Error Tracking:** Sentry
 - **Testing:** Jest + Supertest
+- **CI/CD:** GitHub Actions
+- **Documentation:** Swagger / OpenAPI 3.0
 
 ## Security Features
 
@@ -33,7 +35,9 @@ Swagger Docs: available in development only.
 - Password max length enforced at 72 characters (bcrypt truncation boundary)
 - HTML input sanitization on contact form (sanitize-html)
 - Swagger docs disabled in production
+- Firestore locked down to Admin SDK only (no client-side access)
 - Structured audit logging with Winston
+- Environment variable validation on startup — server refuses to boot with missing config
 
 ## Features
 
@@ -43,46 +47,57 @@ Swagger Docs: available in development only.
 - Role-based access control (user / admin)
 - Contact form email delivery via Resend
 - Input validation with structured error responses
-- 11 passing unit tests with mocked database
+- Health check endpoint (`/health`) for uptime monitoring
+- Graceful shutdown with SIGTERM/SIGINT handling
+- Uncaught exception and unhandled rejection recovery
+- 15 passing unit tests with mocked database
+- CI pipeline runs full test suite on every push to main
 
 ## Project Structure
-```plaintext
 
+```plaintext
 LaunchKit/
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+├── src/
+│   ├── config/
+│   │   ├── emailTemplates.js
+│   │   ├── env.js
+│   │   ├── logger.js
+│   │   ├── mailer.js
+│   │   ├── sentry.js
+│   │   └── swagger.js
+│   ├── middleware/
+│   │   ├── auth.js
+│   │   ├── csrf.js
+│   │   ├── rateLimiter.js
+│   │   └── requireRole.js
+│   ├── models/
+│   │   └── User.js
+│   ├── routes/
+│   │   ├── auth.js
+│   │   ├── contact.js
+│   │   ├── protected.js
+│   │   └── validate.js
+│   ├── validation/
+│   │   └── authSchemas.js
+│   └── tests/
+│       └── auth.test.js
 ├── server/
-│   ├── index.js
-│   ├── server.js
-│   └── src/
-│       ├── config/
-│       │   ├── emailTemplates.js
-│       │   ├── logger.js
-│       │   ├── mailer.js
-│       │   └── swagger.js
-│       ├── middleware/
-│       │   ├── auth.js
-│       │   ├── csrf.js
-│       │   ├── rateLimiter.js
-│       │   └── requireRole.js
-│       ├── models/
-│       │   └── User.js
-│       ├── routes/
-│       │   ├── auth.js
-│       │   ├── contact.js
-│       │   ├── protected.js
-│       │   └── validate.js
-│       ├── validation/
-│       │   └── authSchemas.js
-│       └── tests/
-│           └── auth.test.js
+│   └── index.js
+├── firestore.rules
+├── firestore.indexes.json
+├── app.js
 ├── .gitignore
 └── package.json
-
 ```
 
 ## API Endpoints
 
 | Method | Endpoint | Description | Auth |
 |--------|----------|-------------|------|
+| GET | `/health` | Health check for uptime monitoring | No |
 | POST | `/api/auth/register` | Register a new user | No |
 | POST | `/api/auth/login` | Login and receive access token | No |
 | POST | `/api/auth/refresh` | Get new access token via cookie | No |
@@ -98,18 +113,23 @@ LaunchKit/
 - Node.js 18+
 - Firebase project with Firestore enabled
 - Resend account and API key
+- Sentry project (optional, for error tracking)
 
 ### Environment Variables
 
 ```env
+NODE_ENV=development
+PORT=5000
 JWT_SECRET=
 JWT_REFRESH_SECRET=
-FIREBASE_SERVICE_ACCOUNT=
+FIREBASE_PROJECT_ID=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
 ALLOWED_ORIGINS=http://localhost:3000
 BCRYPT_ROUNDS=12
-NODE_ENV=development
 RESEND_API_KEY=
-COMPANY_EMAIL=
+CONTACT_EMAIL=
+SENTRY_DSN=
 ```
 
 ### Installation
@@ -131,8 +151,16 @@ npm run dev
 ```bash
 npm test
 ```
+
 ## Contact Flow
-POST /api/contact → Zod validation → HTML sanitization → Rate limit check → Resend API → Email delivered to company inbox
+
+```
+POST /api/contact → Zod validation → HTML sanitization → Rate limit check → Resend API → Email delivered
+```
+
+## CI/CD
+
+GitHub Actions runs the full Jest test suite on every push and pull request to `main`. Required secrets must be added to GitHub → Settings → Secrets → Actions.
 
 ## License
 
