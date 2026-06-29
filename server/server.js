@@ -9,6 +9,8 @@ const swaggerSpec = require("./src/config/swagger");
 const { authLimiter, loginLimiter } = require("./src/middleware/rateLimiter");
 const csrfOriginCheck = require("./src/middleware/csrf");
 const contactRouter = require("./src/routes/contact");
+const { initSentry, Sentry } = require("./src/config/sentry.js");
+initSentry();
 
 const app = express();
 
@@ -40,5 +42,5 @@ app.use("/api/auth", authLimiter);
 app.use("/api/auth/login", loginLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api", protectedRoutes);
-
+app.use(Sentry.expressErrorHandler());
 module.exports = app;
