@@ -23,7 +23,6 @@ jest.mock("../firebaseAdmin", () => ({
     }
 }));
 
-// Mock CSRF so it doesn't block test requests
 jest.mock("../middleware/csrf", () => (req, res, next) => next());
 jest.mock("resend", () => {
     return {
@@ -40,10 +39,10 @@ const app = require("../../server");
 const ORIGIN = "http://localhost:3000";
 
 // REGISTER
-describe("POST /api/auth/register", () => {
+describe("POST /api/v1/auth/register", () => {
     it("should register a new user", async () => {
         const res = await request(app)
-            .post("/api/auth/register")
+            .post("/api/v1/auth/register")
             .set("Origin", ORIGIN)
             .send({ email: `test${Date.now()}@test.com`, password: "password123" });
 
@@ -53,7 +52,7 @@ describe("POST /api/auth/register", () => {
 
     it("should fail with invalid email", async () => {
         const res = await request(app)
-            .post("/api/auth/register")
+            .post("/api/v1/auth/register")
             .set("Origin", ORIGIN)
             .send({ email: "notanemail", password: "password123" });
 
@@ -63,7 +62,7 @@ describe("POST /api/auth/register", () => {
 
     it("should fail with short password", async () => {
         const res = await request(app)
-            .post("/api/auth/register")
+            .post("/api/v1/auth/register")
             .set("Origin", ORIGIN)
             .send({ email: "test@test.com", password: "123" });
 
@@ -73,10 +72,10 @@ describe("POST /api/auth/register", () => {
 });
 
 // LOGIN
-describe("POST /api/auth/login", () => {
+describe("POST /api/v1/auth/login", () => {
     it("should fail with non existent user", async () => {
         const res = await request(app)
-            .post("/api/auth/login")
+            .post("/api/v1/auth/login")
             .set("Origin", ORIGIN)
             .send({ email: "nobody@test.com", password: "password123" });
 
@@ -85,7 +84,7 @@ describe("POST /api/auth/login", () => {
 
     it("should fail with wrong password", async () => {
         const res = await request(app)
-            .post("/api/auth/login")
+            .post("/api/v1/auth/login")
             .set("Origin", ORIGIN)
             .send({ email: "test@test.com", password: "wrongpassword" });
 
@@ -94,33 +93,33 @@ describe("POST /api/auth/login", () => {
 });
 
 // PROTECTED
-describe("GET /api/me", () => {
+describe("GET /api/v1/me", () => {
     it("should return 401 with no token", async () => {
-        const res = await request(app).get("/api/me");
+        const res = await request(app).get("/api/v1/me");
         expect(res.statusCode).toBe(401);
     });
 });
 
 // ADMIN
-describe("GET /api/admin", () => {
+describe("GET /api/v1/admin", () => {
     it("should return 401 with no token", async () => {
-        const res = await request(app).get("/api/admin");
+        const res = await request(app).get("/api/v1/admin");
         expect(res.statusCode).toBe(401);
     });
 });
 
 // REFRESH
-describe("POST /api/auth/refresh", () => {
+describe("POST /api/v1/auth/refresh", () => {
     it("should return 401 with no refresh token", async () => {
         const res = await request(app)
-            .post("/api/auth/refresh")
+            .post("/api/v1/auth/refresh")
             .set("Origin", ORIGIN);
         expect(res.statusCode).toBe(401);
     });
 
     it("should return 403 with invalid refresh token", async () => {
         const res = await request(app)
-            .post("/api/auth/refresh")
+            .post("/api/v1/auth/refresh")
             .set("Origin", ORIGIN)
             .set("Cookie", "refreshToken=invalidtoken");
         expect(res.statusCode).toBe(403);
@@ -128,10 +127,10 @@ describe("POST /api/auth/refresh", () => {
 });
 
 // LOGOUT
-describe("POST /api/auth/logout", () => {
+describe("POST /api/v1/auth/logout", () => {
     it("should clear the refresh token cookie and return 200", async () => {
         const res = await request(app)
-            .post("/api/auth/logout")
+            .post("/api/v1/auth/logout")
             .set("Origin", ORIGIN);
         expect(res.statusCode).toBe(200);
         expect(res.body.message).toBe("Logged out successfully");
@@ -140,32 +139,32 @@ describe("POST /api/auth/logout", () => {
 
 // ROLE ENFORCEMENT
 describe("Role enforcement", () => {
-    it("should return 403 on /api/admin with user role token", async () => {
+    it("should return 403 on /api/v1/admin with user role token", async () => {
         const token = jwt.sign(
             { id: "mockid", email: "user@test.com", role: "user", tokenVersion: 0 },
             process.env.JWT_SECRET || "testsecret",
             { expiresIn: "15m" }
         );
         const res = await request(app)
-            .get("/api/admin")
+            .get("/api/v1/admin")
             .set("Authorization", `Bearer ${token}`);
         expect(res.statusCode).toBe(403);
     });
 });
 
 // CONTACT
-describe("POST /api/contact", () => {
+describe("POST /api/v1/contact", () => {
     it("should send a contact mail message successfully", async () => {
         const res = await request(app)
-        .post("/api/contact")
-        .send({ email: "test@test.com", subject: "Test Subject", message: "Test Message" });
+            .post("/api/v1/contact")
+            .send({ email: "test@test.com", subject: "Test Subject", message: "Test Message" });
         expect(res.statusCode).toBe(200);
         expect(res.body.message).toBe("Message sent successfully");
     });
 
     it("should fail with invalid email", async () => {
         const res = await request(app)
-            .post("/api/contact")
+            .post("/api/v1/contact")
             .send({
                 email: "notanemail",
                 subject: "Test subject",
@@ -178,7 +177,7 @@ describe("POST /api/contact", () => {
 
     it("should fail with missing subject", async () => {
         const res = await request(app)
-            .post("/api/contact")
+            .post("/api/v1/contact")
             .send({
                 email: "customer@test.com",
                 subject: "",
@@ -191,7 +190,7 @@ describe("POST /api/contact", () => {
 
     it("should fail with message too short", async () => {
         const res = await request(app)
-            .post("/api/contact")
+            .post("/api/v1/contact")
             .send({
                 email: "customer@test.com",
                 subject: "Test subject",

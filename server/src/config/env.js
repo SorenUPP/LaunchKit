@@ -6,21 +6,21 @@ const envSchema = z.object({
     PORT: z.string().default("5000"),
     JWT_SECRET: z.string().min(1),
     JWT_REFRESH_SECRET: z.string().min(1),
-    FIREBASE_PROJECT_ID: z.string().min(1),
-    FIREBASE_CLIENT_EMAIL: z.string().min(1),
-    FIREBASE_PRIVATE_KEY: z.string().min(1),
-    ALLOWED_ORIGINS: z.string().min(1),
+    FIREBASE_SERVICE_ACCOUNT: z.string().min(1),
+    ALLOWED_ORIGINS: z.string().optional(),
     BCRYPT_ROUNDS: z.string().default("12"),
     RESEND_API_KEY: z.string().min(1),
-    CONTACT_EMAIL: z.string().email(),
+    COMPANY_EMAIL: z.string().email(),
+    SENTRY_DSN: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
-    console.error(" Invalid enviorment variables");
-    parsed.error.errors.forEach(err => {
-        console.error(`   ${err.path.join(".")}; ${err.message}`);
+    console.error(" Invalid environment variables:");
+    const errors = parsed.error.flatten().fieldErrors;
+    Object.entries(errors).forEach(([key, messages]) => {
+        console.error(`   ${key}: ${messages.join(", ")}`);
     });
     process.exit(1);
 }

@@ -25,6 +25,7 @@ app.set("trust proxy", 1);
 app.get("/", (req, res) => {
     res.json({ message: "API running" });
 });
+
 app.get("/health", (req, res) => {
     res.status(200).json({
         status: "ok",
@@ -36,11 +37,13 @@ app.get("/health", (req, res) => {
 if (process.env.NODE_ENV !== "production") {
     app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
-app.use("/api/contact", contactRouter); 
+
+app.use("/api/v1/contact", contactRouter);
 app.use(csrfOriginCheck);
-app.use("/api/auth", authLimiter);
-app.use("/api/auth/login", loginLimiter);
-app.use("/api/auth", authRoutes);
-app.use("/api", protectedRoutes);
+app.use("/api/v1/auth", authLimiter);
+app.use("/api/v1/auth/login", loginLimiter);
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1", protectedRoutes);
 app.use(Sentry.expressErrorHandler());
+
 module.exports = app;
