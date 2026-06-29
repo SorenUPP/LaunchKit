@@ -23,6 +23,13 @@ app.set("trust proxy", 1);
 app.get("/", (req, res) => {
     res.json({ message: "API running" });
 });
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        uptime: process.uptime(),
+        timestamp: new Date().toISOString(),
+    });
+});
 
 if (process.env.NODE_ENV !== "production") {
     app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
