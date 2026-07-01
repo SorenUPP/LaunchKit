@@ -9,8 +9,7 @@ const router = express.Router();
 const logger = require("../config/logger");
 
 const SALT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS) || 12;
-let DUMMY_HASH;
-bcrypt.hash("dummy-password-for-timing", SALT_ROUNDS).then(h => { DUMMY_HASH = h });
+const DUMMY_HASH = bcrypt.hashSync("dummy-password-for-timing", SALT_ROUNDS);
 
 // Registeration
 router.post("/register", validate(registerSchema), async (req, res) => {
@@ -27,6 +26,7 @@ router.post("/register", validate(registerSchema), async (req, res) => {
             email,
             password: hashedPassword,
             role: "user",
+            tokenVersion: 0,
             createdAt: Timestamp.now(),
         });
 
