@@ -1,5 +1,4 @@
 const swaggerJsdoc = require("swagger-jsdoc");
-const path = require("path");
 
 const options = {
     definition: {
@@ -20,7 +19,7 @@ const options = {
         },
         security: [{ bearerAuth: [] }],
         paths: {
-            "/api/auth/register": {
+            "/api/v1/auth/register": {
                 post: {
                     summary: "Register a new user",
                     tags: ["Auth"],
@@ -45,7 +44,7 @@ const options = {
                     },
                 },
             },
-            "/api/auth/login": {
+            "/api/v1/auth/login": {
                 post: {
                     summary: "Login and receive access token",
                     tags: ["Auth"],
@@ -70,7 +69,7 @@ const options = {
                     },
                 },
             },
-            "/api/auth/refresh": {
+            "/api/v1/auth/refresh": {
                 post: {
                     summary: "Refresh access token using cookie",
                     tags: ["Auth"],
@@ -81,7 +80,7 @@ const options = {
                     },
                 },
             },
-            "/api/auth/logout": {
+            "/api/v1/auth/logout": {
                 post: {
                     summary: "Logout and clear refresh token cookie",
                     tags: ["Auth"],
@@ -90,7 +89,7 @@ const options = {
                     },
                 },
             },
-            "/api/me": {
+            "/api/v1/me": {
                 get: {
                     summary: "Get authenticated user info",
                     tags: ["Protected"],
@@ -101,7 +100,7 @@ const options = {
                     },
                 },
             },
-            "/api/admin": {
+            "/api/v1/admin": {
                 get: {
                     summary: "Admin only route",
                     tags: ["Protected"],
@@ -113,7 +112,7 @@ const options = {
                     },
                 },
             },
-            "/api/contact": {
+            "/api/v1/contact": {
                 post: {
                     summary: "Send a contact message to the company",
                     tags: ["Contact"],
@@ -124,8 +123,8 @@ const options = {
                                 schema: {
                                     type: "object",
                                     properties: {
-                                        email: { type: "string", example: "custer@example.com" },
-                                        subject: { type: "string", example: "Inquiry about your sevices" },
+                                        email: { type: "string", example: "customer@example.com" },
+                                        subject: { type: "string", example: "Inquiry about your services" },
                                         message: { type: "string", example: "I would like to know more about your services." },
                                     },
                                 },
@@ -137,8 +136,8 @@ const options = {
                         400: { description: "Validation error" },
                         429: { description: "Too many requests" },
                         500: { description: "Failed to send message" },
-                    }
-                }
+                    },
+                },
             },
         },
     },
