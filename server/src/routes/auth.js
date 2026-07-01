@@ -14,9 +14,9 @@ bcrypt.hash("dummy-password-for-timing", SALT_ROUNDS).then(h => { DUMMY_HASH = h
 
 // Registeration
 router.post("/register", validate(registerSchema), async (req, res) => {
+    const { email, password } = req.body;
     try {
-        const { email, password } = req.body;
-
+        
         const existingUser = await UserModel.findByEmail(email);
         if (existingUser) {
             return res.status(400).json({ message: "User already exists" });
@@ -39,8 +39,8 @@ router.post("/register", validate(registerSchema), async (req, res) => {
 
 // Login
 router.post("/login", validate(loginSchema), async (req, res) => {
+   const {email, password} = req.body;
     try {
-        const {email, password} = req.body;
         
         const user = await UserModel.findByEmail(email);
         
