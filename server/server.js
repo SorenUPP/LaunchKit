@@ -11,6 +11,10 @@ const { authLimiter, loginLimiter, apiLimiter } = require("./src/middleware/rate
 const csrfOriginCheck = require("./src/middleware/csrf");
 const contactRouter = require("./src/routes/contact");
 const { initSentry, Sentry } = require("./src/config/sentry.js");
+const bookingRoutes = require("./src/routes/bookings");
+const resourceRoutes = require("./src/routes/resources");
+const serviceRoutes = require("./src/routes/services");
+
 initSentry();
 
 const app = express();
@@ -40,12 +44,6 @@ app.get("/health", (req, res) => {
 if (process.env.NODE_ENV !== "production") {
     app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
-app.use(csrfOriginCheck);
-app.use("/api/contact", contactRouter);
-app.use("/api/auth", authLimiter);
-app.use("/api/auth/login", loginLimiter);
-app.use("/api/auth", authRoutes);
-app.use("/api", protectedRoutes);
 
 app.use(csrfOriginCheck);
 app.use("/api/v1/contact", contactRouter);
@@ -54,6 +52,9 @@ app.use("/api/v1/auth", authLimiter);
 app.use("/api/v1/auth/login", loginLimiter);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1", protectedRoutes);
+app.use("/api/v1/bookings", bookingRoutes);
+app.use("/api/v1/resources", resourceRoutes);
+app.use("/api/v1/services", serviceRoutes);
 app.use(Sentry.expressErrorHandler());
 
 module.exports = app;
