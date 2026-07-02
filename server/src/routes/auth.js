@@ -10,6 +10,7 @@ const logger = require("../config/logger");
 
 const SALT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS) || 12;
 const DUMMY_HASH = bcrypt.hashSync("dummy-password-for-timing", SALT_ROUNDS);
+
 // Registeration
 router.post("/register", validate(registerSchema), async (req, res) => {
     const { email, password } = req.body;
@@ -25,6 +26,7 @@ router.post("/register", validate(registerSchema), async (req, res) => {
             email,
             password: hashedPassword,
             role: "user",
+            tokenVersion: 0,
             createdAt: Timestamp.now(),
         });
 
@@ -96,7 +98,7 @@ router.post("/refresh", async (req, res) => {
         const storedToken = await UserModel.getRefreshToken(decoded.id);
         if (!storedToken || storedToken !== token) {
             
-            await UserModel.bumpTokenVersion(decoded.id);
+            await UserModel.incrementTokenVersion(decoded.id);
             await UserModel.deleteRefreshToken(decoded.id);
             res.clearCookie("refreshToken", {
                 httpOnly: true,

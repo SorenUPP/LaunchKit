@@ -36,9 +36,10 @@ const UserModel = {
         await tokenCollection.doc(userId).delete();
     },
 
-    bumpTokenVersion: async (userId) => {
+    incrementTokenVersion: async (userId) => {
         const doc = await userCollection.doc(userId).get();
-        const current = doc.exists ? (doc.data().tokenVersion || 0) : 0;
+        if (!doc.exists) throw new Error("User not found");
+        const current = doc.data().tokenVersion ?? 0;
         await userCollection.doc(userId).update({ tokenVersion: current + 1 });
     },
 };

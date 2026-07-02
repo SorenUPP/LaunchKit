@@ -40,6 +40,12 @@ app.get("/health", (req, res) => {
 if (process.env.NODE_ENV !== "production") {
     app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 }
+app.use(csrfOriginCheck);
+app.use("/api/contact", contactRouter);
+app.use("/api/auth", authLimiter);
+app.use("/api/auth/login", loginLimiter);
+app.use("/api/auth", authRoutes);
+app.use("/api", protectedRoutes);
 
 app.use(csrfOriginCheck);
 app.use("/api/v1/contact", contactRouter);
