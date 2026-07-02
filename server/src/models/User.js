@@ -35,6 +35,12 @@ const UserModel = {
     deleteRefreshToken: async (userId) => {
         await tokenCollection.doc(userId).delete();
     },
+
+    bumpTokenVersion: async (userId) => {
+        const doc = await userCollection.doc(userId).get();
+        const current = doc.exists ? (doc.data().tokenVersion || 0) : 0;
+        await userCollection.doc(userId).update({ tokenVersion: current + 1 });
+    },
 };
 
 module.exports = UserModel;

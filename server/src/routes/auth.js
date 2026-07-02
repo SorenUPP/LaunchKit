@@ -9,9 +9,7 @@ const router = express.Router();
 const logger = require("../config/logger");
 
 const SALT_ROUNDS = parseInt(process.env.BCRYPT_ROUNDS) || 12;
-let DUMMY_HASH;
-bcrypt.hash("dummy-password-for-timing", SALT_ROUNDS).then(h => { DUMMY_HASH = h });
-
+const DUMMY_HASH = bcrypt.hashSync("dummy-password-for-timing", SALT_ROUNDS);
 // Registeration
 router.post("/register", validate(registerSchema), async (req, res) => {
     const { email, password } = req.body;
@@ -97,6 +95,14 @@ router.post("/refresh", async (req, res) => {
 
         const storedToken = await UserModel.getRefreshToken(decoded.id);
         if (!storedToken || storedToken !== token) {
+            
+            await UserModel.bumpTokenVersion(decoded.id);
+            await UserModel.deleteRefreshToken(decoded.id);
+            res.clearCookie("refreshToken", {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "strict",
+            });
             return res.status(403).json({ message: "Invalid refresh token" });  
         }
 
